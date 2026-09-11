@@ -36,7 +36,7 @@ async function initMap(){
     
 }
 
-script.src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApM3F4NEtQzlKNguVTSZL5f84_ndaqaFs&loading=async&callback=initMap";
+
 
 
 
