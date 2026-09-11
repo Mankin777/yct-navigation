@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Y.C.T Smart Navigation and Events System</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+<header class="mainheader">
+   <a href="https://portal.yabatech.edu.ng" target="_blank"><img src="images/BCU-logo.png" class="logo" title="LABORE ET VERITATE" alt="campus logo"></a>
+    <div><H1><B>CONVENANT</B></H1>
+        <H2><B>Smart Campus Navigation and Events System</B></H2><br>
+        <h4><b>Find your way around campus</b></h4></div>
+</header>
+<div  class="center">
+<audio controls autoplay>
+    <source src="audios/centuryfox.wav">
+    <!--
+    <source src="audios/welcome_mp3.mp3">
+    <source src="audios/welcome_wav.wav">
+    -->
+</audio>
+</div>
+<section class="hero">
+    <h2 style="color: #0b7010; font-family: 'Times New Roman', Times, serif; ">Navigate the Campus Easily 🏫</h2>
+    <hr class="line">
+    <p>
+        Select your current <span style="color: #4bf728"><b>location</b></span> and <span style="color: #4bf728"><b>destination</b></span> to receive
+        directions, estimated distance, and route information.
+    </p>
+</section>
+
+<div class="navigation-box">
+
+    <h3 >Campus Navigation</h3>
+
+    <label>Current Location</label>
+    <select id="source">
+        <option>Select Location</option>
+        <option>School of Science</option>
+        <option>School of Engineering</option>
+        <option>Library</option>
+        <option>ICT Centre</option>
+        <option>Medical Centre</option>
+        <option>Computer Technology Department</option>
+    </select>
+
+    <label>Destination</label>
+    <select id="destination">
+        <option>Select Destination</option>
+        <option>School of Science</option>
+        <option>School of Engineering</option>
+        <option>Library</option>
+        <option>ICT Centre</option>
+        <option>Medical Centre</option>
+        <option>Computer Technology Department</option>
+    </select>
+
+    <button onclick="showRoute()"><b>Find Route</b></button>
+
+    <div class="result" id="result">
+        click on the button👆 <span class="innerText"><b>[Find Route]</b></span>  to get route information.
+    </div>
+
+</div>
+
+<div class="map-area">
+
+    <h3 style="color: #0b7010; font-family: 'Times New Roman', Times, serif; margin:0%; padding: 0 0 20px 0;"><b>CAMPUS MAP 🗺️</b></h3>
+
+<div class="placeholder-map" id="placeholder" style="flex-direction: column;">
+
+    Google Map location here
+
+    <h1 style="margin: 30px 0 0 0;">
+        <button alt="click to see your current location" onclick="loadMap()"
+            style="border-radius: 15px;
+                   text-align: center;
+                   font-size: 120px;
+                   width: 200px;
+                   height: 200px;" >
+            &#8635
+        </button>
+    </h1>
+
+</div>
+
+<div id="map"></div>
+
+</div>
+
+<footer>
+    © 2026 CONVENANT Smart Navigation and Events System
+</footer>
+
+<script src="js/app.js"></script>
+<script src="js/map.js" ></script>
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
