@@ -1,123 +1,114 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Y.C.T Smart Navigation and Events System</title>
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="YCT Smart Navigation and Events System — a student-focused campus guide prototype.">
+  <title>Y.C.T Smart Navigation and Events System</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
-<header class="mainheader">
-   <a href="https://portal.yabatech.edu.ng" target="_blank"><img src="images/logoyct.png" class="logo" title="LABORE ET VERITATE" alt="campus logo"></a>
-    <div><H1><B>YABA COLLEGE OF TECHNOLOGY</B></H1>
-        <H2><B>Smart Campus Navigation and Events System</B></H2><br>
-        <h4><b>Find your way around campus</b></h4></div>
-</header>
-<div  class="center">
-<audio controls autoplay>
-    <source src="audios/welcome_mp3.mp3">
-    <source src="audios/welcome_wav.wav">
-</audio>
-</div>
-<section class="hero">
-    <h2 style="color: #0b7010; font-family: 'Times New Roman', Times, serif; ">Navigate the Campus Easily 🏫</h2>
-    <hr class="line">
-    <p>
-        Select your current <span style="color: #4bf728"><b>location</b></span> and <span style="color: #4bf728"><b>destination</b></span> to receive
-        directions, estimated distance, and route information.
-    </p>
-</section>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="top">
+    <a class="brand" href="#home" aria-label="YCT Smart Campus home">
+      <img src="images/logoyct.png" alt="Yaba College of Technology logo" class="logo" onerror="this.style.display='none'">
+      <span><strong>YABA COLLEGE OF TECHNOLOGY</strong><small>Smart Campus Navigation &amp; Events System</small></span>
+    </a>
+    <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="primary-nav">☰ <span class="sr-only">Toggle navigation</span></button>
+    <nav id="primary-nav" class="primary-nav" aria-label="Main navigation">
+      <a href="#home">Home</a><a href="#navigation">Navigation</a><a href="#events">Events</a><a href="#guide">Student guide</a><a href="#documents">Checklist</a><a href="#directory">Directory</a><a href="#faq">FAQs</a>
+    </nav>
+  </header>
 
-<div class="navigation-box">
+  <div class="welcome-audio" id="welcome-audio-panel">
+    <span class="welcome-audio-label">🔊 Campus welcome message</span>
+    <audio id="welcome-audio" controls autoplay preload="auto" aria-label="YCT campus welcome audio">
+      <source src="audios/welcome_mp3.mp3" type="audio/mpeg">
+      <source src="audios/welcome_wav.wav" type="audio/wav">
+      Your browser does not support the audio player.
+    </audio>
+    <p id="audio-status" class="audio-status" aria-live="polite">Attempting to play the welcome message…</p>
+  </div>
 
-    <h3 >Campus Navigation</h3>
+  <main id="main">
+    <section class="hero section" id="home">
+      <div class="hero-copy">
+        <p class="eyebrow">LABORE ET VERITATE</p>
+        <h1>Find your way around campus.</h1>
+        <p class="hero-lede">One place to explore campus locations, check student guidance, keep track of documents, and discover upcoming events.</p>
+        <div class="hero-actions"><a class="button" href="#navigation">Explore campus map</a><a class="button button-outline" href="#guide">Open student guide</a></div>
+        <p class="prototype-note">Student project prototype. Please confirm official procedures, event details and building locations with the College.</p>
+      </div>
+      <div class="hero-panel" aria-label="Project features">
+        <div class="feature-icon">🧭</div><h2>Campus, made easier</h2>
+        <p>Navigate, prepare, and stay informed — from one responsive page.</p>
+        <div class="feature-pills"><span>Campus map</span><span>Events</span><span>Student support</span></div>
+      </div>
+    </section>
 
-    <label>Current Location</label>
-    <select id="source">
-        <option>Select Location</option>
-        <option>School of Science</option>
-        <option>School of Engineering</option>
-        <option>Library</option>
-        <option>ICT Centre</option>
-        <option>Medical Centre</option>
-        <option>Computer Technology Department</option>
-    </select>
+    <section class="section section-soft" id="navigation">
+      <div class="section-heading"><p class="eyebrow">GET AROUND</p><h2>Campus navigation</h2><p>Select a starting point and destination. When a valid Google Maps API key is configured, the app can request a walking route and show the route distance and duration.</p></div>
+      <div class="navigation-layout">
+        <form id="route-form" class="panel route-form">
+          <label for="source">Starting point</label><select id="source" required><option value="">Choose starting point</option></select>
+          <label for="destination">Destination</label><select id="destination" required><option value="">Choose destination</option></select>
+          <button class="button" type="submit">Find walking route</button>
+          <button class="text-button" type="button" id="use-location">Use my current location</button>
+          <div id="route-result" class="notice" aria-live="polite">Choose two locations to begin. Map pins are illustrative until campus coordinates are verified.</div>
+        </form>
+        <div class="panel map-panel">
+          <div class="map-topline"><h3>Campus map</h3><span id="map-status" class="status-pill">Map not loaded</span></div>
+          <div id="map" role="region" aria-label="Interactive campus map">
+            <div class="map-fallback" id="map-placeholder">
+              <span class="map-emoji">🗺️</span>
+              <strong>Campus map</strong>
+              <p>To load map, press the button below .</p>
+              <button type="button" class="map-load-button" id="load-map-button" aria-label="Load the campus map">&#8635;</button>
+              <p class="map-hint">Click the button to see the map</p>
+            </div>
+          </div>
+          <p class="fine-print">Map markers and sample coordinates are for development only; verify each point on campus before presenting this as an accurate guide.</p>
+        </div>
+      </div>
+    </section>
 
-    <label>Destination</label>
-    <select id="destination">
-        <option>Select Destination</option>
-        <option>School of Science</option>
-        <option>School of Engineering</option>
-        <option>Library</option>
-        <option>ICT Centre</option>
-        <option>Medical Centre</option>
-        <option>Computer Technology Department</option>
-    </select>
+    <section class="section" id="events">
+      <div class="section-heading"><p class="eyebrow">WHAT'S HAPPENING</p><h2>Campus events</h2><p>Use this section for verified academic dates, orientations, seminars, club activities and campus programmes.</p></div>
+      <div class="notice warning"><strong>Demo content:</strong> the cards below are examples to demonstrate event cards and countdowns. Replace them with confirmed event information before public use.</div>
+      <div id="events-grid" class="card-grid"></div>
+    </section>
 
-    <button onclick="showRoute()"><b>Find Route</b></button>
+    <section class="section section-soft" id="guide">
+      <div class="section-heading"><p class="eyebrow">STUDENT SUPPORT</p><h2>Student guide</h2><p>Choose the description that best fits you to see a suggested starting point. Requirements and processes can vary, so check the official portal or relevant office.</p></div>
+      <div id="student-type-grid" class="card-grid student-type-grid"></div>
+      <div class="guide-layout">
+        <div class="panel"><div class="panel-heading"><div><p class="eyebrow">SUGGESTED CHECKLIST</p><h3>Registration steps</h3></div><span id="progress-label" class="status-pill">0 of 9 complete</span></div><div class="progress-track"><span id="progress-bar"></span></div><div id="steps-list" class="steps-list"></div><button class="button button-small button-outline" id="reset-steps" type="button">Reset progress</button></div>
+        <aside class="panel guide-aside"><div class="aside-icon">📌</div><h3>Before you visit an office</h3><ul><li>Check the current official instructions.</li><li>Keep originals safe and bring copies only when requested.</li><li>Confirm office location and opening hours.</li><li>Keep receipts and registration evidence.</li></ul><p class="fine-print">The steps shown here are a planning aid, not an official College directive.</p></aside>
+      </div>
+    </section>
 
-    <div class="result" id="result">
-        click on the button👆 <span class="innerText"><b>[Find Route]</b></span>  to get route information.
-    </div>
+    <section class="section" id="documents">
+      <div class="section-heading"><p class="eyebrow">BE PREPARED</p><h2>Document checklist</h2><p>Tick items you have prepared. The list is a general reminder, not a definitive list of documents required for every student.</p></div>
+      <div class="checklist-layout"><div class="panel"><div class="panel-heading"><h3>My documents</h3><span class="status-pill" id="docs-count">0 ready</span></div><div id="documents-list" class="documents-list"></div><button class="text-button" type="button" id="clear-documents">Clear checklist</button></div><aside class="panel checklist-summary"><div class="progress-ring" id="docs-ring"><span id="docs-percent">0%</span></div><h3>Preparation progress</h3><p id="docs-summary">Tick a document when you have it ready.</p></aside></div>
+    </section>
 
-</div>
+    <section class="section section-soft" id="directory">
+      <div class="section-heading"><p class="eyebrow">FIND SUPPORT</p><h2>Campus directory</h2><p>Common service points students may need. Confirm the exact office name and location with the College.</p></div>
+      <div class="directory-tools"><label for="directory-search" class="sr-only">Search campus directory</label><input id="directory-search" type="search" placeholder="Search office or service…"></div>
+      <div id="directory-grid" class="card-grid"></div>
+    </section>
 
-<div class="map-area">
+    <section class="section" id="faq">
+      <div class="section-heading"><p class="eyebrow">QUICK ANSWERS</p><h2>Frequently asked questions</h2><p>General pointers for common student questions. For definitive answers, use official College channels.</p></div>
+      <div id="faq-list" class="faq-list"></div>
+    </section>
 
-    <h3 style="color: #0b7010; font-family: 'Times New Roman', Times, serif; margin:0%; padding: 0 0 20px 0;"><b>CAMPUS MAP 🗺️</b></h3>
+    <section class="section help-section" id="help"><div><p class="eyebrow">NEED MORE HELP?</p><h2>Use official channels for confirmation.</h2><p>Contact the appropriate College office or consult the official student portal for current requirements, payments, dates and contact information.</p></div><a class="button button-light" href="https://portal.yabatech.edu.ng" target="_blank" rel="noopener noreferrer">Open YABATECH portal ↗</a></section>
+  </main>
 
-<div class="placeholder-map" id="placeholder" style="flex-direction: column;">
-    Google Map location here
-    <h1 style="margin: 30px 0 0 0;">
-        <button alt="click to see your current location" onclick="loadMap()"
-            style="border-radius: 15px;
-                   text-align: center;
-                   font-size: 120px;
-                   width: 200px;
-                   height: 200px;" >
-            &#8635
-        </button>
-    </h1>
-    <br>
-click button 👆 to see current location
-</div>
-
-<div id="map"></div>
-
-</div>
-
-<footer>
-    © 2026 YABA COLLEGE OF TECHNOLOGY Smart Navigation and Events System
-</footer>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApM3F4NEtQzlKNguVTSZL5f84_ndaqaFs&loading=async&callback=initMap" async defer></script>
-<script src="js/app.js"></script>
-<script src="js/map.js" ></script>
-
+  <footer class="site-footer"><p>© 2026 Y.C.T Smart Navigation and Events System</p><p>Student project prototype · Verify official details before relying on them.</p><a href="#top" id="back-to-top">Back to top ↑</a></footer>
+  <button type="button" id="floating-top" class="floating-top" aria-label="Back to top" hidden>↑</button>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="js/config.js"></script><script src="js/app.js"></script><script src="js/map.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
