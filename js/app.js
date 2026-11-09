@@ -1,7 +1,7 @@
 'use strict';
 
 const campusLocations = [
-  { id: 'main-gate', name: 'Main Gate', position: { lat: 6.5162, lng: 3.3738 }, category: 'Gate', description: 'Main campus entrance (sample coordinate; verify on site).' },
+  { id: 'main-gate', name: 'Front Entrance (Main Gate)', position: { lat: 6.518978, lng: 3.372324 }, category: 'Gate', description: 'Front entrance to Yaba College of Technology.' },
   { id: 'science', name: 'School of Science', position: { lat: 6.5158, lng: 3.3748 }, category: 'Academic', description: 'School of Science / science complex (sample coordinate; verify on site).' },
   { id: 'engineering', name: 'School of Engineering', position: { lat: 6.5180, lng: 3.3778 }, category: 'Academic', description: 'School of Engineering (sample coordinate; verify on site).' },
   { id: 'library', name: 'Library', position: { lat: 6.5182, lng: 3.3752 }, category: 'Study', description: 'Library (sample coordinate; verify on site).' },
@@ -12,7 +12,25 @@ const campusLocations = [
   { id: 'student-affairs', name: 'Student Affairs', position: { lat: 6.5155, lng: 3.3778 }, category: 'Support', description: 'Student support office (location needs verification).' },
   { id: 'arts', name: 'Arts Complex', position: { lat: 6.5150, lng: 3.3760 }, category: 'Academic', description: 'Arts complex (sample coordinate; verify on site).' },
   { id: 'food-village', name: 'Food Village', position: { lat: 6.5160, lng: 3.3790 }, category: 'Food', description: 'Food Village (sample coordinate; verify on site).' },
-  { id: 'multipurpose-hall', name: 'Multipurpose Hall', position: { lat: 6.5155, lng: 3.3778 }, category: 'Events', description: 'Multipurpose Hall (sample coordinate; verify on site).' }
+  { id: 'multipurpose-hall', name: 'Multipurpose Hall', position: { lat: 6.5155, lng: 3.3778 }, category: 'Events', description: 'Multipurpose Hall (sample coordinate; verify on site).' },
+  { id: 'nacos-office', name: 'NACOS Office', position: { lat: 6.516913, lng: 3.374910 }, category: 'Support', description: 'NACOS Office.' },
+  { id: 'front-engineering', name: 'Front of Engineering Building', position: { lat: 6.517018, lng: 3.374772 }, category: 'Academic', description: 'Area in front of the Engineering building.' },
+  { id: 'mechanical-workshop-2', name: 'Front of Mechanical Workshop 2', position: { lat: 6.517065, lng: 3.374846 }, category: 'Academic', description: 'Area in front of Mechanical Workshop 2.' },
+  { id: 'metallurgical-engineering', name: 'Department of Metallurgical Engineering', position: { lat: 6.517253, lng: 3.374637 }, category: 'Academic', description: 'Department of Metallurgical Engineering.' },
+  { id: 'mechanical-workshop-1', name: 'Front of Mechanical Workshop 1', position: { lat: 6.517573, lng: 3.374137 }, category: 'Academic', description: 'Area in front of Mechanical Workshop 1.' },
+  { id: 'cnc-workshop', name: 'Front of CNC Engineering Workshop', position: { lat: 6.517610, lng: 3.374169 }, category: 'Academic', description: 'Area in front of the CNC Engineering Workshop.' },
+  { id: 'entrepreneurship-centre', name: 'Centre for Entrepreneurship Development / Entrepreneurship Development Building', position: { lat: 6.517581, lng: 3.374109 }, category: 'Academic', description: 'Centre for Entrepreneurship Development building.' },
+  { id: 'liberal-studies', name: 'School of Liberal Studies', position: { lat: 6.517850, lng: 3.374076 }, category: 'Academic', description: 'School of Liberal Studies.' },
+  { id: 'zenith-bank', name: 'Front of Zenith Bank', position: { lat: 6.517273, lng: 3.374090 }, category: 'Banking', description: 'Area in front of Zenith Bank.' },
+  { id: 'yct-microfinance-bank', name: 'Front of YCT Microfinance Bank', position: { lat: 6.517341, lng: 3.373996 }, category: 'Banking', description: 'Area in front of YCT Microfinance Bank.' },
+  { id: 'horology-instrumentation', name: 'Entrance to Horology and Instrumentation Section', position: { lat: 6.517483, lng: 3.373926 }, category: 'Academic', description: 'Entrance to the Horology and Instrumentation section.' },
+  { id: 'science-complex-entrance-1', name: 'Entrance 1 to Dr Philip Adegbile Science Complex', position: { lat: 6.517596, lng: 3.374057 }, category: 'Academic', description: 'Entrance 1 to the Dr Philip Adegbile Science Complex.' },
+  { id: 'art-museum', name: 'Yaba Art Museum / School of Art, Design and Printing Technology', position: { lat: 6.517633, lng: 3.373079 }, category: 'Academic', description: 'Yaba Art Museum and School of Art, Design and Printing Technology.' },
+  { id: 'science-technology-complex', name: 'Entrance to Science and Technology Complex', position: { lat: 6.518023, lng: 3.372494 }, category: 'Academic', description: 'Entrance to the Science and Technology Complex.' },
+  { id: 'cyber-cafe', name: 'General Cyber Cafe and Snacks Stand', position: { lat: 6.518119, lng: 3.372498 }, category: 'Support', description: 'General cyber cafe and snacks stand.' },
+  { id: 'etf-new-building', name: 'Entrance to ETF/NEW Building', position: { lat: 6.517987, lng: 3.374024 }, category: 'Administration', description: 'Entrance to the ETF/NEW building.' },
+  { id: 'lotus-bank', name: 'Lotus Bank', position: { lat: 6.518873, lng: 3.372755 }, category: 'Banking', description: 'Lotus Bank.' },
+  { id: 'financial-studies', name: 'School of Financial Studies', position: { lat: 6.518067, lng: 3.373788 }, category: 'Academic', description: 'School of Financial Studies.' }
 ];
 window.campusLocations = campusLocations;
 
@@ -176,7 +194,7 @@ function updateCountdowns() {
 function populateLocationSelects() {
   ['source', 'destination'].forEach(id => {
     const select = el(id);
-    campusLocations.forEach(location => { const option = document.createElement('option'); option.value = location.id; option.textContent = location.name; select.appendChild(option); });
+    [...campusLocations].sort((a, b) => a.name.localeCompare(b.name)).forEach(location => { const option = document.createElement('option'); option.value = location.id; option.textContent = location.name; select.appendChild(option); });
   });
 }
 
