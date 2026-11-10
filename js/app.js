@@ -94,32 +94,98 @@ let toastTimeout;
 
 function el(id) { return document.getElementById(id); }
 
-// Try to autoplay the welcome message. Browsers may block audible autoplay;
-// if blocked, retry after the visitor's first interaction and keep controls visible.
+// Welcome message: tries to autoplay (browsers may block audible autoplay) and shows a live
+// frequency display that follows the audio's highs and lows while it plays.
 const welcomeAudio = el('welcome-audio');
 const audioStatus = el('audio-status');
+const visualizer = el('audio-visualizer');
+
+function setAudioStatus(text) { if (audioStatus) { audioStatus.textContent = text || ''; audioStatus.hidden = !text; } }
+
+let audioContext = null, analyser = null, frequencyData = null, visualizerConnected = false, visualizerRunning = false;
+const BAR_COUNT = 28;
+
+function sizeVisualizer() {
+  if (!visualizer) return;
+  const ratio = window.devicePixelRatio || 1, box = visualizer.getBoundingClientRect();
+  visualizer.width = Math.max(1, Math.round((box.width || 260) * ratio));
+  visualizer.height = Math.max(1, Math.round((box.height || 44) * ratio));
+}
+
+function drawVisualizer() {
+  if (!visualizer) return;
+  const canvas = visualizer.getContext('2d');
+  if (!canvas) return;
+  const width = visualizer.width, height = visualizer.height, middle = height / 2;
+  const playing = welcomeAudio && !welcomeAudio.paused && !welcomeAudio.ended;
+  const live = playing && visualizerConnected;
+  if (live) analyser.getByteFrequencyData(frequencyData);
+
+  canvas.clearRect(0, 0, width, height);
+  const step = width / BAR_COUNT, barWidth = Math.max(2, step * 0.55);
+  const gradient = canvas.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, '#3fae45'); gradient.addColorStop(0.5, '#0b7010'); gradient.addColorStop(1, '#3fae45');
+  canvas.lineCap = 'round'; canvas.lineWidth = barWidth;
+
+  for (let i = 0; i < BAR_COUNT; i++) {
+    let level = 0;
+    if (live) {                                   // low bars = bass, high bars = treble (log-spaced bins)
+      const first = Math.floor(Math.pow(i / BAR_COUNT, 1.7) * 63) + 1;
+      const last = Math.max(first + 1, Math.floor(Math.pow((i + 1) / BAR_COUNT, 1.7) * 63) + 1);
+      let sum = 0; for (let bin = first; bin < last; bin++) sum += frequencyData[bin];
+      level = Math.min(1, Math.pow(sum / (last - first) / 255, 1.15) * 1.25);
+    }
+    const half = Math.max(live ? barWidth / 2 : barWidth / 2, level * (height / 2 - barWidth / 2));
+    const x = step * i + step / 2;
+    canvas.strokeStyle = live ? gradient : '#a9cfab';
+    canvas.beginPath(); canvas.moveTo(x, middle - half); canvas.lineTo(x, middle + half); canvas.stroke();
+  }
+  if (playing) window.requestAnimationFrame(drawVisualizer); else visualizerRunning = false;
+}
+
+function startVisualizerLoop() { if (!visualizerRunning) { visualizerRunning = true; window.requestAnimationFrame(drawVisualizer); } }
+
+// Connects the audio to an analyser. Done only once the browser lets the audio engine run
+// (after a click/tap/key), because routing audio through a suspended engine would mute it.
+async function attachVisualizer() {
+  if (visualizerConnected || !welcomeAudio || !visualizer) return;
+  if (!/^https?:$/.test(window.location.protocol)) return;          // a file:// page would be muted by browser security rules
+  const AudioEngine = window.AudioContext || window.webkitAudioContext;
+  if (!AudioEngine) return;
+  try {
+    audioContext = audioContext || new AudioEngine();
+    if (audioContext.state !== 'running') await Promise.race([audioContext.resume(), new Promise(resolve => window.setTimeout(resolve, 400))]);
+    if (audioContext.state !== 'running') return;                    // try again after the next user gesture
+    const source = audioContext.createMediaElementSource(welcomeAudio);
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256; analyser.smoothingTimeConstant = 0.78;
+    source.connect(analyser); analyser.connect(audioContext.destination);
+    frequencyData = new Uint8Array(analyser.frequencyBinCount);
+    visualizerConnected = true;
+    if (!welcomeAudio.paused) startVisualizerLoop();
+  } catch (error) { /* the audio itself keeps playing normally without the display */ }
+}
+
 if (welcomeAudio) {
+  sizeVisualizer(); drawVisualizer();
+  window.addEventListener('resize', () => { sizeVisualizer(); if (!visualizerRunning) drawVisualizer(); });
+  welcomeAudio.addEventListener('play', () => { setAudioStatus(''); attachVisualizer(); startVisualizerLoop(); });
+  ['pause', 'ended'].forEach(name => welcomeAudio.addEventListener(name, () => window.setTimeout(drawVisualizer, 60)));
+
   const playWelcomeAudio = () => {
     const playAttempt = welcomeAudio.play();
     if (playAttempt && typeof playAttempt.then === 'function') {
-      playAttempt.then(() => {
-        if (audioStatus) audioStatus.textContent = 'Welcome message is playing.';
-      }).catch(() => {
-        if (audioStatus) audioStatus.textContent = 'Your browser blocked automatic playback. Press Play, or interact with the page once to retry.';
-      });
+      playAttempt.catch(() => setAudioStatus('Your browser blocked automatic playback. Press play, or tap the page once to retry.'));
     }
   };
   playWelcomeAudio();
-  const retryAudioOnce = () => {
-    if (welcomeAudio.paused) playWelcomeAudio();
-    document.removeEventListener('pointerdown', retryAudioOnce);
-    document.removeEventListener('keydown', retryAudioOnce);
+  const retryOnGesture = () => {
+    if (welcomeAudio.paused && !welcomeAudio.ended && welcomeAudio.currentTime === 0) playWelcomeAudio();
+    attachVisualizer();
+    if (visualizerConnected) { ['pointerdown', 'keydown', 'touchstart'].forEach(name => document.removeEventListener(name, retryOnGesture)); }
   };
-  document.addEventListener('pointerdown', retryAudioOnce, { once: true });
-  document.addEventListener('keydown', retryAudioOnce, { once: true });
-  welcomeAudio.addEventListener('error', () => {
-    if (audioStatus) audioStatus.textContent = 'Welcome audio files were not found. Add welcome_mp3.mp3 or welcome_wav.wav to the audios folder.';
-  });
+  ['pointerdown', 'keydown', 'touchstart'].forEach(name => document.addEventListener(name, retryOnGesture, { passive: true }));
+  welcomeAudio.addEventListener('error', () => setAudioStatus('Welcome audio files were not found. Add welcome_mp3.mp3 or welcome_wav.wav to the audios folder.'));
 }
 
 function escapeHtml(value) { return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
@@ -194,6 +260,7 @@ function updateCountdowns() {
 function populateLocationSelects() {
   ['source', 'destination'].forEach(id => {
     const select = el(id);
+    if (id === 'source') { const me = document.createElement('option'); me.value = '__current__'; me.textContent = 'Me (my location)'; select.appendChild(me); }
     [...campusLocations].sort((a, b) => a.name.localeCompare(b.name)).forEach(location => { const option = document.createElement('option'); option.value = location.id; option.textContent = location.name; select.appendChild(option); });
   });
 }
@@ -211,36 +278,106 @@ el('route-form').addEventListener('submit', event => {
   }
 });
 
+// Picking a starting point and a destination draws the route straight away.
+function autoRoute() {
+  const source = el('source').value, destination = el('destination').value;
+  renderAudioGuide();
+  if (source === '__current__' && typeof window.startTracking === 'function') window.startTracking();   // asks for location access
+  if (!source || !destination) return;
+  if (source === destination) { el('route-result').textContent = 'Choose two different locations to request a route.'; return; }
+  if (typeof window.requestCampusRoute === 'function') window.requestCampusRoute(source, destination);
+}
+window.autoRoute = autoRoute;
+el('source').addEventListener('change', autoRoute);
+el('destination').addEventListener('change', autoRoute);
+
 el('use-location').addEventListener('click', () => {
   if (!navigator.geolocation) { showToast('This browser does not support location access.'); return; }
   showToast('Requesting your location permission…');
-  navigator.geolocation.getCurrentPosition(position => {
-    if (typeof window.setUserLocation === 'function') window.setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
-    const result = el('route-result'); result.textContent = 'Your current location was received. Choose a campus destination to request directions.'; result.classList.remove('notice-warning');
-    window.currentUserCoordinates = { lat: position.coords.latitude, lng: position.coords.longitude };
-    const sourceOption = document.createElement('option'); sourceOption.value = '__current__'; sourceOption.textContent = 'My current location';
-    const source = el('source'); if (![...source.options].some(option => option.value === '__current__')) source.insertBefore(sourceOption, source.options[1]); source.value = '__current__';
-  }, error => showToast(error.code === 1 ? 'Location permission was denied.' : 'Could not get your location. Check device and browser location settings.'), { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+  el('source').value = '__current__';
+  autoRoute();
 });
+
+// ---- Audio guide: notes are added by hand in js/audio-notes.js ---------------------
+function audioNoteCard(note) {
+  const card = document.createElement('div');
+  card.className = 'audio-note';
+  const title = document.createElement('strong'); title.textContent = note.title || 'Audio note'; card.appendChild(title);
+  if (note.text) { const text = document.createElement('p'); text.textContent = note.text; card.appendChild(text); }
+  const player = document.createElement('audio');
+  player.controls = true; player.preload = 'none'; player.src = note.file;
+  const problem = document.createElement('p'); problem.className = 'fine-print'; problem.hidden = true;
+  problem.textContent = 'This audio file could not be loaded. Check its path in js/audio-notes.js.';
+  player.addEventListener('error', () => { problem.hidden = false; });
+  card.appendChild(player); card.appendChild(problem);
+  return card;
+}
+
+function renderAudioGuide() {
+  const box = el('audio-guide');
+  if (!box) return;
+  const notes = (window.audioNotes || []).filter(note => note && note.file && note.to);
+  const source = el('source').value, destination = el('destination').value;
+  box.textContent = '';
+  const heading = document.createElement('h4'); heading.textContent = '🎧 Audio guide'; box.appendChild(heading);
+
+  if (!destination) {
+    const hint = document.createElement('p'); hint.className = 'fine-print'; hint.textContent = 'Choose a destination to hear its audio note.'; box.appendChild(hint);
+  } else {
+    const routeNotes = notes.filter(note => note.from && note.from === source && note.to === destination);
+    const placeNotes = notes.filter(note => !note.from && note.to === destination);
+    const matches = [...routeNotes, ...placeNotes];
+    if (matches.length) matches.forEach(note => box.appendChild(audioNoteCard(note)));
+    else { const none = document.createElement('p'); none.className = 'fine-print'; none.textContent = 'No audio note has been added for this place yet.'; box.appendChild(none); }
+  }
+
+  if (notes.length) {
+    const all = document.createElement('details'); all.className = 'audio-all';
+    const summary = document.createElement('summary'); summary.textContent = `Browse all audio notes (${notes.length})`; all.appendChild(summary);
+    notes.forEach(note => all.appendChild(audioNoteCard(note)));
+    box.appendChild(all);
+  }
+}
 
 el('reset-steps').addEventListener('click', () => { checkedSteps.clear(); renderSteps(); showToast('Registration checklist reset.'); });
 el('clear-documents').addEventListener('click', () => { checkedDocuments.clear(); renderDocuments(); showToast('Document checklist cleared.'); });
 el('directory-search').addEventListener('input', event => renderDirectory(event.target.value));
 
-const menuToggle = el('menu-toggle');
-menuToggle.addEventListener('click', () => { const expanded = menuToggle.getAttribute('aria-expanded') === 'true'; menuToggle.setAttribute('aria-expanded', String(!expanded)); el('primary-nav').classList.toggle('open', !expanded); });
-document.querySelectorAll('.primary-nav a').forEach(link => link.addEventListener('click', () => { el('primary-nav').classList.remove('open'); menuToggle.setAttribute('aria-expanded', 'false'); }));
+// The sticky header is taller on phones/tablets (brand row + section tabs). Measure it so jumps to a
+// section never leave its title hidden underneath.
+const siteHeader = document.querySelector('.site-header');
+function syncHeaderHeight() { if (siteHeader) document.documentElement.style.setProperty('--header-h', `${siteHeader.offsetHeight}px`); }
+syncHeaderHeight();
+window.addEventListener('resize', syncHeaderHeight);
+window.addEventListener('orientationchange', () => window.setTimeout(syncHeaderHeight, 250));
+window.addEventListener('load', syncHeaderHeight);
+if ('ResizeObserver' in window && siteHeader) new ResizeObserver(syncHeaderHeight).observe(siteHeader);
 
-// Highlight the navigation item for the section currently in view.
+// Highlight the tab for the section currently in view and keep that tab visible in the
+// scrolling tab strip (phones and tablets show the section titles as swipeable tabs).
+const primaryNav = el('primary-nav');
 const navLinks = [...document.querySelectorAll('.primary-nav a')];
+function centreActiveTab(link) {
+  if (!primaryNav || primaryNav.scrollWidth <= primaryNav.clientWidth) return;
+  const left = link.offsetLeft - (primaryNav.clientWidth - link.offsetWidth) / 2;
+  if (primaryNav.scrollTo) primaryNav.scrollTo({ left, behavior: 'smooth' }); else primaryNav.scrollLeft = left;
+}
+function setActiveTab(hash) {
+  navLinks.forEach(link => {
+    const active = link.hash === hash;
+    link.classList.toggle('active', active);
+    if (active) { link.setAttribute('aria-current', 'true'); centreActiveTab(link); } else link.removeAttribute('aria-current');
+  });
+}
 if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-    if (entry.isIntersecting) navLinks.forEach(link => link.classList.toggle('active', link.hash === `#${entry.target.id}`));
+    if (entry.isIntersecting) setActiveTab(`#${entry.target.id}`);
   }), { rootMargin: '-25% 0px -60% 0px' });
   document.querySelectorAll('main section[id]').forEach(section => observer.observe(section));
 }
+navLinks.forEach(link => link.addEventListener('click', () => setActiveTab(link.hash)));
 
-populateLocationSelects(); renderStudentTypes(); renderSteps(); renderDocuments(); renderDirectory(); renderFaqs(); renderEvents();
+populateLocationSelects(); renderAudioGuide(); renderStudentTypes(); renderSteps(); renderDocuments(); renderDirectory(); renderFaqs(); renderEvents();
 window.setInterval(updateCountdowns, 60000);
 
 // Back to top: scrolls the window itself instead of jumping to the sticky header (#top),
@@ -251,8 +388,7 @@ function scrollToTop(event) {
   window.scrollTo({ top: 0, left: 0, behavior: reduce ? 'auto' : 'smooth' });
   if (window.location.hash) history.replaceState(null, '', window.location.pathname + window.location.search);
 }
-const footerTop = el('back-to-top'), floatingTop = el('floating-top');
-if (footerTop) footerTop.addEventListener('click', scrollToTop);
+const floatingTop = el('floating-top');
 if (floatingTop) {
   floatingTop.addEventListener('click', scrollToTop);
   const toggleFloatingTop = () => { floatingTop.hidden = window.scrollY < 600; };
