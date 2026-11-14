@@ -13,7 +13,7 @@
   <header class="site-header" id="top">
     <a class="brand" href="#home" aria-label="YCT Smart Campus home">
       <img src="images/logoyct.png" alt="Yaba College of Technology logo" class="logo" onerror="this.style.display='none'">
-      <span><strong>YABA COLLEGE OF TECHNOLOGY</strong><small>Smart Campus Navigation &amp; Events System</small></span>
+      <span><strong>YABA COLLEGE OF TECHNOLOGY</strong><small>Smart Campus · Navigation &amp; Events</small></span>
     </a>
     
     <nav id="primary-nav" class="primary-nav" aria-label="Main navigation">
@@ -52,10 +52,61 @@
       <div class="section-heading"><p class="eyebrow">GET AROUND</p><h2>Campus navigation</h2><p>Select a starting point and destination. When a valid Google Maps API key is configured, the app can request a walking route and show the route distance and duration.</p></div>
       <div class="navigation-layout">
         <form id="route-form" class="panel route-form">
+          <div class="place-search" id="place-search">
+            <label for="place-search-input">Search for a place</label>
+            <input id="place-search-input" type="search" placeholder="e.g. library, bursary, back gate" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <ul id="place-search-results" class="place-results" hidden></ul>
+            <p id="place-search-note" class="fine-print" aria-live="polite"></p>
+          </div>
           <label for="source">Starting point</label><select id="source" required><option value="">Choose starting point</option></select>
           <label for="destination">Destination</label><select id="destination" required><option value="">Choose destination</option></select>
           <button class="button" type="submit">Find walking route</button>
           <button class="text-button" type="button" id="use-location">Use my current location</button>
+          <details class="person-box" id="person-box">
+            <summary>📍 Find a person</summary>
+            <p class="fine-print">Ask them to send their location (a Google Maps link or coordinates) and paste it below. Choose Me as your starting point and you get a route to them. Paste a newer location any time and they move on your map.</p>
+            <label for="person-name">Their name (optional)</label>
+            <input id="person-name" type="text" maxlength="30" placeholder="e.g. Ada" autocomplete="off">
+            <label for="person-coords">Their location</label>
+            <input id="person-coords" type="text" placeholder="6.5170, 3.3760 or a Google Maps link" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <div class="person-actions">
+              <button class="button button-small" type="button" id="person-locate">Locate person</button>
+              <button class="text-button" type="button" id="person-clear">Clear</button>
+              <button class="text-button" type="button" id="share-my-location">Share my location</button>
+            </div>
+            <p id="person-status" class="fine-print" aria-live="polite"></p>
+            <div class="meeting" id="meeting">
+              <p class="meeting-title">🔴 Live meeting code</p>
+              <p class="fine-print">Share your live position with a friend for up to an hour, or follow a friend who shared theirs. No sign-up needed.</p>
+              <div class="meeting-share">
+                <label for="meeting-name">Your name (your friend sees this)</label>
+                <input id="meeting-name" type="text" maxlength="30" placeholder="e.g. Tunde" autocomplete="off">
+                <div class="person-actions"><button class="button button-small" type="button" id="meeting-start">Share live (get a code)</button></div>
+                <div id="meeting-host" hidden>
+                  <div class="meeting-code" id="meeting-code" aria-live="polite">------</div>
+                  <div class="person-actions">
+                    <button class="button button-small" type="button" id="meeting-copy-code">Copy code</button>
+                    <button class="text-button" type="button" id="meeting-copy-link">Copy link</button>
+                    <button class="text-button" type="button" id="meeting-extend">Restart 1-hour timer</button>
+                    <button class="text-button" type="button" id="meeting-stop">Stop sharing</button>
+                  </div>
+                </div>
+                <p id="meeting-host-status" class="fine-print" aria-live="polite"></p>
+                <p class="fine-print">While you share, your live position is sent to Google's Firebase service and shown to anyone who has your code. It is removed when you stop, close this page, or the timer ends. Keep this page open; phones may pause location when the screen is off.</p>
+              </div>
+              <div class="meeting-join">
+                <label for="meeting-join-code">Have a code? Enter it to follow your friend</label>
+                <input id="meeting-join-code" type="text" maxlength="6" placeholder="e.g. K7M2QX" autocomplete="off" autocapitalize="characters" spellcheck="false">
+                <div class="person-actions">
+                  <button class="button button-small" type="button" id="meeting-join">Follow</button>
+                  <button class="text-button" type="button" id="meeting-leave" hidden>Stop following</button>
+                </div>
+                <p id="meeting-join-status" class="fine-print" aria-live="polite"></p>
+              </div>
+              <p id="meeting-setup-note" class="fine-print person-warning" hidden>Live codes are switched off until the site owner adds the Firebase settings (js/firebase-config.js).</p>
+            </div>
+            <p class="fine-print">"Share my location" makes a link with the spot where you are right now. Anyone who has the link can see that spot. This site does not store it.</p>
+          </details>
           <div id="route-result" class="notice" aria-live="polite">Choose two locations to begin. Map pins are illustrative until campus coordinates are verified.</div>
           <div id="audio-guide" class="audio-guide" aria-live="polite"></div>
         </form>
@@ -70,6 +121,7 @@
               <p class="map-hint">Click the button to see the map</p>
             </div>
           </div>
+          <ul class="map-legend" aria-label="Map key"><li><i class="dot-building"></i>Building</li><li><i class="dot-gate"></i>Entrance / gate</li><li><i class="dot-me"></i>Me</li><li><i class="dot-person"></i>Person</li></ul>
           <p class="fine-print">Map markers and sample coordinates are for development only; verify each point on campus before presenting this as an accurate guide.</p>
         </div>
       </div>
@@ -112,6 +164,6 @@
   <footer class="site-footer"><p>© 2026 Y.C.T Smart Navigation and Events System</p><p>Student project prototype · Verify official details before relying on them.</p></footer>
   <button type="button" id="floating-top" class="floating-top" aria-label="Back to top" hidden>↑</button>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="js/config.js"></script><script src="js/audio-notes.js"></script><script src="js/app.js"></script><script src="js/map.js"></script>
+  <script src="js/config.js"></script><script src="js/firebase-config.js"></script><script src="js/audio-notes.js"></script><script src="js/app.js"></script><script src="js/map.js"></script><script src="js/meeting.js"></script>
 </body>
 </html>
