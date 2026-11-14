@@ -4,15 +4,15 @@ const campusLocations = [
   { id: 'main-gate', name: 'Front Entrance (Main Gate)', position: { lat: 6.518978, lng: 3.372324 }, category: 'Gate', description: 'Front entrance to Yaba College of Technology.' },
   { id: 'science', name: 'School of Science', position: { lat: 6.5158, lng: 3.3748 }, category: 'Academic', description: 'School of Science / science complex (sample coordinate; verify on site).' },
   { id: 'engineering', name: 'School of Engineering', position: { lat: 6.5180, lng: 3.3778 }, category: 'Academic', description: 'School of Engineering (sample coordinate; verify on site).' },
-  { id: 'library', name: 'Library', position: { lat: 6.5182, lng: 3.3752 }, category: 'Study', description: 'Library (sample coordinate; verify on site).' },
+  { id: 'library', name: 'Entrance to Library', position: { lat: 6.517913, lng: 3.375582 }, category: 'Study', description: 'Entrance to Library.' },
   { id: 'ict', name: 'ICT Centre', position: { lat: 6.5178, lng: 3.3772 }, category: 'Support', description: 'ICT Centre (sample coordinate; verify on site).' },
-  { id: 'medical', name: 'Medical Centre', position: { lat: 6.5167, lng: 3.3768 }, category: 'Health', description: 'Medical Centre (sample coordinate; verify on site).' },
+  { id: 'medical', name: 'Entrance to Old YCT Medical Centre', position: { lat: 6.519497, lng: 3.375079 }, category: 'Health', description: 'Entrance to Old YCT Medical Centre.' },
   { id: 'computer-tech', name: 'Computer Technology Department', position: { lat: 6.5165, lng: 3.3780 }, category: 'Academic', description: 'Department location (sample coordinate; verify on site).' },
-  { id: 'bursary', name: 'Bursary', position: { lat: 6.5175, lng: 3.3740 }, category: 'Administration', description: 'Bursary (sample coordinate; verify on site).' },
-  { id: 'student-affairs', name: 'Student Affairs', position: { lat: 6.5155, lng: 3.3778 }, category: 'Support', description: 'Student support office (location needs verification).' },
+  { id: 'bursary', name: 'Bursary / Register Unit / Student Account Section / Bursar\'s Office', position: { lat: 6.517039, lng: 3.374137 }, category: 'Administration', description: 'Bursary / Register Unit / Student Account Section / Bursar\'s Office.' },
+  { id: 'student-affairs', name: 'Student Affairs Unit', position: { lat: 6.519248, lng: 3.374952 }, category: 'Support', description: 'Student Affairs Unit.' },
   { id: 'arts', name: 'Arts Complex', position: { lat: 6.5150, lng: 3.3760 }, category: 'Academic', description: 'Arts complex (sample coordinate; verify on site).' },
   { id: 'food-village', name: 'Food Village', position: { lat: 6.5160, lng: 3.3790 }, category: 'Food', description: 'Food Village (sample coordinate; verify on site).' },
-  { id: 'multipurpose-hall', name: 'Multipurpose Hall', position: { lat: 6.5155, lng: 3.3778 }, category: 'Events', description: 'Multipurpose Hall (sample coordinate; verify on site).' },
+  { id: 'multipurpose-hall', name: 'Multipurpose Hall', position: { lat: 6.518361, lng: 3.376203 }, category: 'Events', description: 'Multipurpose Hall.' },
   { id: 'nacos-office', name: 'NACOS Office', position: { lat: 6.516913, lng: 3.374910 }, category: 'Support', description: 'NACOS Office.' },
   { id: 'front-engineering', name: 'Front of Engineering Building', position: { lat: 6.517018, lng: 3.374772 }, category: 'Academic', description: 'Area in front of the Engineering building.' },
   { id: 'mechanical-workshop-2', name: 'Front of Mechanical Workshop 2', position: { lat: 6.517065, lng: 3.374846 }, category: 'Academic', description: 'Area in front of Mechanical Workshop 2.' },
@@ -30,7 +30,29 @@ const campusLocations = [
   { id: 'cyber-cafe', name: 'General Cyber Cafe and Snacks Stand', position: { lat: 6.518119, lng: 3.372498 }, category: 'Support', description: 'General cyber cafe and snacks stand.' },
   { id: 'etf-new-building', name: 'Entrance to ETF/NEW Building', position: { lat: 6.517987, lng: 3.374024 }, category: 'Administration', description: 'Entrance to the ETF/NEW building.' },
   { id: 'lotus-bank', name: 'Lotus Bank', position: { lat: 6.518873, lng: 3.372755 }, category: 'Banking', description: 'Lotus Bank.' },
-  { id: 'financial-studies', name: 'School of Financial Studies', position: { lat: 6.518067, lng: 3.373788 }, category: 'Academic', description: 'School of Financial Studies.' }
+  { id: 'financial-studies', name: 'School of Financial Studies', position: { lat: 6.518067, lng: 3.373788 }, category: 'Academic', description: 'School of Financial Studies.' },
+  { id: 'parking-engineering', name: 'Parking Lot, behind Engineering Building', position: { lat: 6.516978, lng: 3.374714 }, category: 'Support', description: 'Parking Lot, behind Engineering Building.' },
+  { id: 'new-science-entrance', name: 'Entrance to New Science Building', position: { lat: 6.516673, lng: 3.375200 }, category: 'Academic', description: 'Entrance to New Science Building.' },
+  { id: 'polymer-textile', name: 'Polymer and Textile Technology Building', position: { lat: 6.517576, lng: 3.376212 }, category: 'Academic', description: 'Polymer and Textile Technology Building.' },
+  { id: 'polymer-textile-entrance', name: 'Entrance to Polymer and Textile', position: { lat: 6.517813, lng: 3.375717 }, category: 'Academic', description: 'Entrance to Polymer and Textile.' },
+  { id: 'food-microbiology-lab', name: 'Food Microbiology Lab, Food Technology Department', position: { lat: 6.517821, lng: 3.375729 }, category: 'Academic', description: 'Food Microbiology Lab, Food Technology Department.' },
+  { id: 'nutrition-dietetics', name: 'Front of Department of Nutrition and Dietetics, Food Technology', position: { lat: 6.517812, lng: 3.375725 }, category: 'Academic', description: 'Front of Department of Nutrition and Dietetics, Food Technology.' },
+  { id: 'back-gate', name: 'Back Gate', position: { lat: 6.517972, lng: 3.376309 }, category: 'Gate', description: 'Back Gate.' },
+  { id: 'environmental-studies', name: 'School of Environmental Studies (Surveying and Geoinformatics, Architecture, Quantity Surveying, Estate Management and Valuation)', position: { lat: 6.517911, lng: 3.375897 }, category: 'Academic', description: 'School of Environmental Studies (Surveying and Geoinformatics, Architecture, Quantity Surveying, Estate Management and Valuation).' },
+  { id: 'food-technology-building', name: 'Food Technology Building', position: { lat: 6.517826, lng: 3.375722 }, category: 'Academic', description: 'Food Technology Building.' },
+  { id: 'volleyball-court', name: 'Volleyball Court', position: { lat: 6.518152, lng: 3.373530 }, category: 'Sports', description: 'Volleyball Court.' },
+  { id: 'basketball-court', name: 'Basketball Court', position: { lat: 6.517853, lng: 3.373342 }, category: 'Sports', description: 'Basketball Court.' },
+  { id: 'sports-right-sitting', name: 'Sports Complex, Right Sitting Position', position: { lat: 6.518061, lng: 3.374614 }, category: 'Sports', description: 'Sports Complex, Right Sitting Position.' },
+  { id: 'science-complex-entrance', name: 'Entrance to Dr Philip Adegbile Science Complex', position: { lat: 6.517929, lng: 3.374152 }, category: 'Academic', description: 'Entrance to Dr Philip Adegbile Science Complex.' },
+  { id: 'science-complex-entrance-3', name: 'Entrance 3 to Dr Philip Adegbile Science Complex', position: { lat: 6.519337, lng: 3.374704 }, category: 'Academic', description: 'Entrance 3 to Dr Philip Adegbile Science Complex.' },
+  { id: 'hollywood-hostel', name: 'Entrance to Hollywood Hostel', position: { lat: 6.517840, lng: 3.372577 }, category: 'Hostel', description: 'Entrance to Hollywood Hostel.' },
+  { id: 'fellowship-centres', name: 'Fellowship Centres', position: { lat: 6.519348, lng: 3.374773 }, category: 'Support', description: 'Fellowship Centres.' },
+  { id: 'new-medical', name: 'Entrance to New Medical Centre (FGN Needs Assessment Intervention Fund 2022)', position: { lat: 6.519571, lng: 3.376253 }, category: 'Health', description: 'Entrance to New Medical Centre (FGN Needs Assessment Intervention Fund 2022).' },
+  { id: 'management-business', name: 'School of Management and Business Studies Building', position: { lat: 6.518991, lng: 3.376071 }, category: 'Academic', description: 'School of Management and Business Studies Building.' },
+  { id: 'micro-credit-hall', name: 'YCT Banking and Finance Micro Credit Banking Hall', position: { lat: 6.519579, lng: 3.375267 }, category: 'Banking', description: 'YCT Banking and Finance Micro Credit Banking Hall.' },
+  { id: 'toilet-multipurpose', name: 'Toilet beside Multipurpose Hall', position: { lat: 6.518432, lng: 3.375522 }, category: 'Support', description: 'Toilet beside Multipurpose Hall.' },
+  { id: 'skill-acquisition', name: 'Entrance to Skill Acquisition Centre', position: { lat: 6.518341, lng: 3.372011 }, category: 'Academic', description: 'Entrance to Skill Acquisition Centre.' },
+  { id: 'sports-complex', name: 'Sports Complex', position: { lat: 6.517964, lng: 3.374164 }, category: 'Sports', description: 'Sports Complex (centre point of the two surveyed corners).' }
 ];
 window.campusLocations = campusLocations;
 
@@ -298,6 +320,80 @@ el('use-location').addEventListener('click', () => {
   autoRoute();
 });
 
+// ---- Place search: type a name, pick a match, then use it as your start or your destination ----
+function normalizeText(value) {
+  return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+// Every word you type must match something: a word start in the name (best), part of the name, or the category / description.
+function scorePlace(location, tokens, whole) {
+  const name = normalizeText(location.name), words = name.split(' ');
+  const extra = normalizeText(`${location.category} ${location.description}`);
+  let score = name === whole ? 100 : name.startsWith(whole) ? 80 : 0;
+  for (const token of tokens) {
+    if (words.some(word => word.startsWith(token))) score += 20;
+    else if (name.includes(token)) score += 10;
+    else if (extra.includes(token)) score += 3;
+    else return 0;
+  }
+  return score + 1;
+}
+
+function choosePlace(location, role) {
+  const select = el(role === 'start' ? 'source' : 'destination');
+  const other = el(role === 'start' ? 'destination' : 'source');
+  select.value = location.id;
+  select.dispatchEvent(new Event('change'));                      // draws the route once both ends are chosen
+  el('place-search-input').value = '';
+  el('place-search-results').textContent = '';
+  el('place-search-results').hidden = true;
+  el('place-search-note').textContent = `${role === 'start' ? 'Starting point' : 'Destination'} set to ${location.name}.`;
+  if (!other.value && window.YCTMap && window.YCTMap.focusPlace) window.YCTMap.focusPlace(location.id);
+}
+
+function placeResultRow(location) {
+  const row = document.createElement('li');
+  row.dataset.id = location.id;
+  const name = document.createElement('div'); name.className = 'place-name'; name.textContent = location.name;
+  const meta = document.createElement('div'); meta.className = 'place-meta'; meta.textContent = location.category;
+  const actions = document.createElement('div'); actions.className = 'place-actions';
+  const start = document.createElement('button'); start.type = 'button'; start.textContent = '📍 Start here';
+  const go = document.createElement('button'); go.type = 'button'; go.className = 'go'; go.textContent = '🎯 Go here';
+  start.addEventListener('click', () => choosePlace(location, 'start'));
+  go.addEventListener('click', () => choosePlace(location, 'destination'));
+  actions.append(start, go);
+  row.append(name, meta, actions);
+  return row;
+}
+
+function renderPlaceResults() {
+  const input = el('place-search-input'), list = el('place-search-results'), note = el('place-search-note');
+  const whole = normalizeText(input.value);
+  list.textContent = '';
+  if (!whole) { list.hidden = true; note.textContent = ''; return; }
+  const tokens = whole.split(' ');
+  const matches = campusLocations
+    .map(location => ({ location, score: scorePlace(location, tokens, whole) }))
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.location.name.localeCompare(b.location.name));
+  if (!matches.length) { list.hidden = true; note.textContent = `No place matches “${input.value.trim()}”. Try another word.`; return; }
+  matches.slice(0, 8).forEach(item => list.appendChild(placeResultRow(item.location)));
+  list.hidden = false;
+  note.textContent = matches.length === 1
+    ? '1 place found. Tap Start here or Go here.'
+    : `${matches.length} places found${matches.length > 8 ? ' (showing the best 8; type more letters to narrow it down)' : ''}. Pick one, then tap Start here or Go here.`;
+}
+
+el('place-search-input').addEventListener('input', renderPlaceResults);
+el('place-search-input').addEventListener('keydown', event => {
+  const rows = [...el('place-search-results').querySelectorAll('li')];
+  if (event.key === 'Enter') {
+    event.preventDefault();                                       // Enter must not submit the route form
+    if (rows.length === 1) choosePlace(campusLocations.find(location => location.id === rows[0].dataset.id), 'destination');
+    else if (rows.length > 1) rows[0].querySelector('button').focus();
+  } else if (event.key === 'Escape') { el('place-search-input').value = ''; renderPlaceResults(); }
+});
+
 // ---- Audio guide: notes are added by hand in js/audio-notes.js ---------------------
 function audioNoteCard(note) {
   const card = document.createElement('div');
@@ -321,7 +417,9 @@ function renderAudioGuide() {
   box.textContent = '';
   const heading = document.createElement('h4'); heading.textContent = '🎧 Audio guide'; box.appendChild(heading);
 
-  if (!destination) {
+  if (destination === '__person__') {
+    const note = document.createElement('p'); note.className = 'fine-print'; note.textContent = 'Audio notes are available for campus places only.'; box.appendChild(note);
+  } else if (!destination) {
     const hint = document.createElement('p'); hint.className = 'fine-print'; hint.textContent = 'Choose a destination to hear its audio note.'; box.appendChild(hint);
   } else {
     const routeNotes = notes.filter(note => note.from && note.from === source && note.to === destination);
