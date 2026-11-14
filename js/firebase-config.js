@@ -8,9 +8,11 @@
   say which project to talk to. What protects the data is the database rules (see the setup guide).
 */
 window.YCT_FIREBASE = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "YOUR_DATABASE_URL",
-  projectId: "YOUR_PROJECT_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCI1JWm9JWyJY4MW0ygw5PE7Mg_Bw2PaMI",
+  authDomain: "yct-navigation.firebaseapp.com",
+  databaseURL: "https://yct-navigation-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "yct-navigation",
+  storageBucket: "yct-navigation.firebasestorage.app",
+  messagingSenderId: "796772729941",
+  appId: "1:796772729941:web:3994fc6832d373ef9c40dc"
 };
