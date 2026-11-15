@@ -75,11 +75,7 @@ function initMap() {
   userMarker = null; userLabel = null; accuracyCircle = null; initialCentreDone = false;
   campusMap.addListener('dragstart', () => { followUser = false; });   // stop auto-follow when the user pans away
   meInfo = new google.maps.InfoWindow();
-  directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer({
-    map: campusMap, suppressMarkers: true, preserveViewport: false,
-    polylineOptions: { strokeColor: ROUTE_COLOUR, strokeOpacity: 0.95, strokeWeight: 7 }
-  });
+  directionsService = null; directionsRenderer = null;        // the older Directions service is only created if it is ever needed
   campusMarkers = []; markerById = {}; openCampusInfo = null; activeRoute = null; fallbackLine = null; fallbackCasing = null;
   personMarker = null; personTrail = null; personInfo = null;
   window.campusLocations.forEach(location => {
@@ -126,7 +122,7 @@ function requestCampusRoute(sourceId, destinationId, options = {}) {
   const source = usingMe ? null : findLocation(sourceId);
   const destination = findLocation(destinationId);
   if (!destination || (!usingMe && !source)) { showRouteNote('Please select valid locations.', true); return; }
-  if (!campusMap || !directionsService) {                // no button press needed: the map opens by itself
+  if (!campusMap) {                                      // no button press needed: the map opens by itself
     mapRouteWaiting = true;
     showRouteNote('Opening the map… your route will appear as soon as it is ready.', false);
     loadMap();
@@ -144,28 +140,109 @@ function requestCampusRoute(sourceId, destinationId, options = {}) {
   lastRouteTime = Date.now();
   if (!silent) showRouteNote('Finding the walking route…', false);
 
+  const stale = () => !activeRoute || activeRoute.sourceId !== sourceId || activeRoute.destinationId !== destinationId;   // selection changed meanwhile
   const useFallback = status => {
     clearRenderedRoute();
     drawFallbackRoute(origin, destination.position, silent);
     showFallbackRoute(fromName, destination, origin, status);
     if (!silent) focusDestination(destinationId);
   };
-  try {
-    directionsService.route({ origin, destination: destination.position, travelMode: google.maps.TravelMode.WALKING }, (response, status) => {
-      if (!activeRoute || activeRoute.sourceId !== sourceId || activeRoute.destinationId !== destinationId) return;   // selection changed meanwhile
-      if (status === 'OK' && response.routes?.[0]?.legs?.[0]) {
-        clearFallbackLine();
-        directionsRenderer.setOptions({ preserveViewport: silent });
-        directionsRenderer.setDirections(response);
-        showWalkingRoute(fromName, destination, response.routes[0].legs[0]);
-        if (!silent) focusDestination(destinationId);
-      } else {
-        useFallback(status);
-      }
+
+  (async () => {
+    // 1) Google's newer Routes service (needs "Routes API" switched on for the key's project)
+    let routesError = null;
+    try {
+      const route = await computeWalkingRoute(origin, destination.position);
+      if (stale()) return;
+      clearRenderedRoute();
+      drawRibbon(pathPoints(route.path), silent);
+      showRoutesRoute(fromName, destination, route, origin);
+      if (!silent) focusDestination(destinationId);
+      return;
+    } catch (error) { routesError = error; }
+    if (stale()) return;
+
+    // 2) the older Directions service, in case only that one is switched on
+    const service = ensureDirectionsService();
+    if (service) {
+      try {
+        service.route({ origin, destination: destination.position, travelMode: google.maps.TravelMode.WALKING }, (response, status) => {
+          if (stale()) return;
+          if (status === 'OK' && response.routes?.[0]?.legs?.[0]) {
+            clearFallbackLine();
+            const renderer = ensureDirectionsRenderer();
+            renderer.setOptions({ preserveViewport: silent });
+            renderer.setDirections(response);
+            showWalkingRoute(fromName, destination, response.routes[0].legs[0]);
+            if (!silent) focusDestination(destinationId);
+          } else {
+            warnDirectionsSetup(routesError, status);
+            useFallback(status);
+          }
+        });
+        return;
+      } catch (error) { /* fall through to the ribbon */ }
+    }
+    // 3) a blue straight-line ribbon, so there is always something to follow
+    warnDirectionsSetup(routesError, 'unavailable');
+    useFallback(describeError(routesError));
+  })();
+}
+
+// ---- Google routing helpers --------------------------------------------------------------
+function describeError(error) {
+  return String((error && (error.code || error.status || error.message)) || 'unavailable').replace(/\s+/g, ' ').slice(0, 60);
+}
+
+// For whoever runs the site: the visitor only sees a short code, the fix is explained in the browser console.
+function warnDirectionsSetup(routesError, legacyStatus) {
+  console.warn('[YCT] Walking directions are not available. In Google Cloud, switch on "Routes API" for this key\'s project, add it to the key\'s API restrictions, and make sure billing is linked (demo keys cannot use it). Routes error:', routesError, '| older Directions status:', legacyStatus);
+}
+
+async function computeWalkingRoute(origin, destinationPosition) {
+  const { Route } = await google.maps.importLibrary('routes');
+  const { routes } = await Route.computeRoutes({
+    origin, destination: destinationPosition, travelMode: 'WALKING',
+    fields: ['path', 'distanceMeters', 'durationMillis', 'legs']
+  });
+  const route = routes && routes[0];
+  if (!route || !route.path || route.path.length < 2) throw new Error('ZERO_RESULTS');
+  return route;
+}
+
+function ensureDirectionsService() {
+  if (!directionsService && google.maps.DirectionsService) directionsService = new google.maps.DirectionsService();
+  return directionsService;
+}
+
+function ensureDirectionsRenderer() {
+  if (!directionsRenderer) {
+    directionsRenderer = new google.maps.DirectionsRenderer({
+      map: campusMap, suppressMarkers: true, preserveViewport: false,
+      polylineOptions: { strokeColor: ROUTE_COLOUR, strokeOpacity: 0.95, strokeWeight: 7 }
     });
-  } catch (error) {
-    useFallback('unavailable');
   }
+  return directionsRenderer;
+}
+
+function pathPoints(path) {
+  return path.map(point => ({ lat: typeof point.lat === 'function' ? point.lat() : point.lat, lng: typeof point.lng === 'function' ? point.lng() : point.lng }));
+}
+
+function showRoutesRoute(fromName, destination, route, origin) {
+  const result = document.getElementById('route-result');
+  const leg = route.legs && route.legs[0];
+  const metres = route.distanceMeters ?? (leg && leg.distanceMeters) ?? distanceMeters(origin, destination.position);
+  const text = value => (typeof value === 'string' && value ? value : '');
+  const minutes = Math.max(1, Math.round(((route.durationMillis ?? (leg && leg.durationMillis)) || (metres / WALKING_METRES_PER_MINUTE) * 60000) / 60000));
+  const distanceText = text(leg && leg.localizedValues && leg.localizedValues.distance) || formatDistance(metres);
+  const durationText = text(leg && leg.localizedValues && leg.localizedValues.duration) || `${minutes} min`;
+  const steps = ((leg && leg.steps) || []).filter(step => step.instructions).slice(0, 10).map(step => {
+    const stepDistance = text(step.localizedValues && step.localizedValues.distance) || formatDistance(step.distanceMeters || 0);
+    return `<li>${escapeMapText(plainText(step.instructions))} <span class="fine-print">(${escapeMapText(stepDistance)})</span></li>`;
+  }).join('');
+  result.innerHTML = `<strong>${escapeMapText(fromName)} → ${escapeMapText(destination.name)}</strong><br>Walking distance: ${escapeMapText(distanceText)} · about ${escapeMapText(durationText)}${steps ? `<ol class="route-steps">${steps}</ol>` : '<br>'}<span class="fine-print">Walking directions from Google Maps. Check actual campus access on the ground.</span>`;
+  result.classList.remove('notice-warning');
 }
 
 function showWalkingRoute(fromName, destination, leg) {
@@ -186,26 +263,29 @@ function showFallbackRoute(fromName, destination, origin, status) {
 }
 
 // A solid blue ribbon with a white edge and an arrowhead pointing at the destination.
-function drawFallbackRoute(origin, destinationPosition, silent) {
+function drawRibbon(points, silent) {
   clearFallbackLine();
-  const path = [origin, destinationPosition];
-  fallbackCasing = new google.maps.Polyline({ path, map: campusMap, strokeColor: '#ffffff', strokeOpacity: 0.95, strokeWeight: 10, zIndex: 1 });
+  fallbackCasing = new google.maps.Polyline({ path: points, map: campusMap, strokeColor: '#ffffff', strokeOpacity: 0.95, strokeWeight: 10, zIndex: 1 });
   fallbackLine = new google.maps.Polyline({
-    path, map: campusMap, strokeColor: ROUTE_COLOUR, strokeOpacity: 0.95, strokeWeight: 6, zIndex: 2,
+    path: points, map: campusMap, strokeColor: ROUTE_COLOUR, strokeOpacity: 0.95, strokeWeight: 6, zIndex: 2,
     icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 3.5, strokeColor: '#ffffff', strokeWeight: 1, fillColor: ROUTE_COLOUR, fillOpacity: 1 }, offset: '100%' }]
   });
   if (!silent) {
     const bounds = new google.maps.LatLngBounds();
-    bounds.extend(origin); bounds.extend(destinationPosition);
+    points.forEach(point => bounds.extend(point));
     campusMap.fitBounds(bounds, 70);
   }
+}
+
+function drawFallbackRoute(origin, destinationPosition, silent) {
+  drawRibbon([origin, destinationPosition], silent);
 }
 
 function clearFallbackLine() {
   [fallbackLine, fallbackCasing].forEach(line => { if (line) line.setMap(null); });
   fallbackLine = null; fallbackCasing = null;
 }
-function clearRenderedRoute() { try { directionsRenderer.setDirections({ routes: [] }); } catch (error) { /* nothing drawn yet */ } }
+function clearRenderedRoute() { try { if (directionsRenderer) directionsRenderer.setDirections({ routes: [] }); } catch (error) { /* nothing drawn yet */ } }
 
 function focusDestination(destinationId) {
   if (destinationId === PERSON_ID) refreshPersonInfo();
