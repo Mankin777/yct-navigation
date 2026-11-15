@@ -153,3 +153,24 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .place-actions button.go{background:var(--green);color:#fff}
 .place-actions button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 @media(max-width:760px){.place-search input{font-size:16px;min-height:46px}}
+
+/* ===== Desktop: the map fills the full height of the left panel (no empty space underneath) ===== */
+#map{position:relative}
+.map-fallback{position:absolute;inset:0;height:auto;min-height:0}
+@media(min-width:1051px){
+  .navigation-layout{align-items:stretch}
+  .map-panel{display:flex;flex-direction:column}
+  .map-panel #map{flex:1 1 auto;height:auto;min-height:480px}
+}
+
+/* ===== Phones: larger college name, subtitle visible ===== */
+@media(max-width:520px){
+  .brand{gap:8px}
+  .logo{width:36px;height:36px}
+  .brand strong{max-width:none;font-size:.88rem;letter-spacing:.05em;line-height:1.2}
+  .brand small{display:block;font-size:.62rem;letter-spacing:.1em;margin-top:1px}
+}
+@media(max-width:360px){
+  .brand strong{font-size:.78rem;letter-spacing:.03em}
+  .brand small{font-size:.56rem;letter-spacing:.06em}
+}
