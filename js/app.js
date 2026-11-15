@@ -2,16 +2,10 @@
 
 const campusLocations = [
   { id: 'main-gate', name: 'Front Entrance (Main Gate)', position: { lat: 6.518978, lng: 3.372324 }, category: 'Gate', description: 'Front entrance to Yaba College of Technology.' },
-  { id: 'science', name: 'School of Science', position: { lat: 6.5158, lng: 3.3748 }, category: 'Academic', description: 'School of Science / science complex (sample coordinate; verify on site).' },
-  { id: 'engineering', name: 'School of Engineering', position: { lat: 6.5180, lng: 3.3778 }, category: 'Academic', description: 'School of Engineering (sample coordinate; verify on site).' },
   { id: 'library', name: 'Entrance to Library', position: { lat: 6.517913, lng: 3.375582 }, category: 'Study', description: 'Entrance to Library.' },
-  { id: 'ict', name: 'ICT Centre', position: { lat: 6.5178, lng: 3.3772 }, category: 'Support', description: 'ICT Centre (sample coordinate; verify on site).' },
   { id: 'medical', name: 'Entrance to Old YCT Medical Centre', position: { lat: 6.519497, lng: 3.375079 }, category: 'Health', description: 'Entrance to Old YCT Medical Centre.' },
-  { id: 'computer-tech', name: 'Computer Technology Department', position: { lat: 6.5165, lng: 3.3780 }, category: 'Academic', description: 'Department location (sample coordinate; verify on site).' },
   { id: 'bursary', name: 'Bursary / Register Unit / Student Account Section / Bursar\'s Office', position: { lat: 6.517039, lng: 3.374137 }, category: 'Administration', description: 'Bursary / Register Unit / Student Account Section / Bursar\'s Office.' },
   { id: 'student-affairs', name: 'Student Affairs Unit', position: { lat: 6.519248, lng: 3.374952 }, category: 'Support', description: 'Student Affairs Unit.' },
-  { id: 'arts', name: 'Arts Complex', position: { lat: 6.5150, lng: 3.3760 }, category: 'Academic', description: 'Arts complex (sample coordinate; verify on site).' },
-  { id: 'food-village', name: 'Food Village', position: { lat: 6.5160, lng: 3.3790 }, category: 'Food', description: 'Food Village (sample coordinate; verify on site).' },
   { id: 'multipurpose-hall', name: 'Multipurpose Hall', position: { lat: 6.518361, lng: 3.376203 }, category: 'Events', description: 'Multipurpose Hall.' },
   { id: 'nacos-office', name: 'NACOS Office', position: { lat: 6.516913, lng: 3.374910 }, category: 'Support', description: 'NACOS Office.' },
   { id: 'front-engineering', name: 'Front of Engineering Building', position: { lat: 6.517018, lng: 3.374772 }, category: 'Academic', description: 'Area in front of the Engineering building.' },
@@ -318,6 +312,7 @@ el('use-location').addEventListener('click', () => {
   showToast('Requesting your location permission…');
   el('source').value = '__current__';
   autoRoute();
+  if (typeof window.loadMap === 'function') window.loadMap();     // show the map and where you are
 });
 
 // ---- Place search: type a name, pick a match, then use it as your start or your destination ----

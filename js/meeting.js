@@ -288,7 +288,7 @@
       followName = String(value.name || 'Friend').slice(0, 30);
       followUpdated = Number(value.updated) || serverNow();
       api().setPerson(followName, { lat: value.lat, lng: value.lng }, { live: true });
-      if (!followRouted) { followRouted = true; api().routeToPerson(); }
+      if (!followRouted) { followRouted = true; api().routeToPerson(); api().centreOnPerson(); }      // opens the map, shows them, draws the route
       renderFollow();
     };
     followRef.on('value', followHandler, error => { stopFollowing({ keepPerson: false }); setJoinStatus(friendlyError(error), true); });

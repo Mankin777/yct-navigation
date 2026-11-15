@@ -30,7 +30,10 @@ let personMarker = null;
 let personTrail = null;
 let personInfo = null;
 let personGlideFrame = null;
-let routePersonPosition = null;   // where the person was when the current route was drawn
+let routePersonPosition = null;
+let mapRouteWaiting = false;     // a route was asked for while the map was still closed
+let pendingFocusId = null;       // a place to show as soon as the map opens
+let fallbackCasing = null;   // where the person was when the current route was drawn
 
 function updateMapStatus(text, configured = false) {
   const status = document.getElementById('map-status');
@@ -75,9 +78,9 @@ function initMap() {
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer({
     map: campusMap, suppressMarkers: true, preserveViewport: false,
-    polylineOptions: { strokeColor: ROUTE_COLOUR, strokeOpacity: 0.9, strokeWeight: 6 }
+    polylineOptions: { strokeColor: ROUTE_COLOUR, strokeOpacity: 0.95, strokeWeight: 7 }
   });
-  campusMarkers = []; markerById = {}; openCampusInfo = null; activeRoute = null; fallbackLine = null;
+  campusMarkers = []; markerById = {}; openCampusInfo = null; activeRoute = null; fallbackLine = null; fallbackCasing = null;
   personMarker = null; personTrail = null; personInfo = null;
   window.campusLocations.forEach(location => {
     const marker = new google.maps.Marker({ position: location.position, map: campusMap, title: location.name, icon: pinIcon(markerKind(location)) });
@@ -91,6 +94,9 @@ function initMap() {
   document.getElementById('route-result').textContent = 'Map loaded. Choose a starting point and a destination to see the route.';
   renderUserMarker(); centreOnUserFirstTime(); updatePanel();          // show the tracker if a fix already arrived
   renderPerson();                                                      // and the person, if one was located before the map loaded
+  mapRouteWaiting = false;
+  if (person) centreOnPerson();
+  if (pendingFocusId) { const id = pendingFocusId; pendingFocusId = null; focusPlace(id); }
   if (typeof window.autoRoute === 'function') window.autoRoute();       // draw the route if both lists were already filled in
 }
 
@@ -120,10 +126,15 @@ function requestCampusRoute(sourceId, destinationId, options = {}) {
   const source = usingMe ? null : findLocation(sourceId);
   const destination = findLocation(destinationId);
   if (!destination || (!usingMe && !source)) { showRouteNote('Please select valid locations.', true); return; }
+  if (!campusMap || !directionsService) {                // no button press needed: the map opens by itself
+    mapRouteWaiting = true;
+    showRouteNote('Opening the map… your route will appear as soon as it is ready.', false);
+    loadMap();
+    return;
+  }
   if (usingMe && unusable) { showRouteNote(UNUSABLE_TEXT, true); return; }
   if (usingMe && offCampus) { showRouteNote(OFF_CAMPUS_TEXT + ' Or choose a campus starting point.', true); return; }
   if (usingMe && !lastFix) { showRouteNote('Finding your position… allow location access when your browser asks.', false); return; }
-  if (!campusMap || !directionsService) { showRouteNote('Press the map button to load the map. Your route will then appear automatically.', false); return; }
 
   const origin = usingMe ? { lat: lastFix.lat, lng: lastFix.lng } : source.position;
   const fromName = usingMe ? 'Me' : source.name;
@@ -170,19 +181,18 @@ function showFallbackRoute(fromName, destination, origin, status) {
   const metres = distanceMeters(origin, destination.position);
   const minutes = Math.max(1, Math.round(metres / WALKING_METRES_PER_MINUTE));
   const direction = compassPoint(bearingDegrees(origin, destination.position));
-  result.innerHTML = `<strong>${escapeMapText(fromName)} → ${escapeMapText(destination.name)}</strong><br>Head <strong>${direction}</strong> for about ${formatDistance(metres)} (roughly ${minutes} min on foot).<br><span class="fine-print">The blue dashed line is a straight-line guide. Turn-by-turn walking directions are unavailable (${escapeMapText(status || 'unavailable')}).</span>`;
+  result.innerHTML = `<strong>${escapeMapText(fromName)} → ${escapeMapText(destination.name)}</strong><br>Head <strong>${direction}</strong> for about ${formatDistance(metres)} (roughly ${minutes} min on foot).<br><span class="fine-print">The blue ribbon on the map is a straight-line guide. Turn-by-turn walking directions are unavailable (${escapeMapText(status || 'unavailable')}).</span>`;
   result.classList.remove('notice-warning');
 }
 
-// A dashed blue line with an arrowhead pointing at the destination.
+// A solid blue ribbon with a white edge and an arrowhead pointing at the destination.
 function drawFallbackRoute(origin, destinationPosition, silent) {
   clearFallbackLine();
+  const path = [origin, destinationPosition];
+  fallbackCasing = new google.maps.Polyline({ path, map: campusMap, strokeColor: '#ffffff', strokeOpacity: 0.95, strokeWeight: 10, zIndex: 1 });
   fallbackLine = new google.maps.Polyline({
-    path: [origin, destinationPosition], map: campusMap, strokeOpacity: 0,
-    icons: [
-      { icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeColor: ROUTE_COLOUR, scale: 3 }, offset: '0', repeat: '14px' },
-      { icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 4, strokeColor: ROUTE_COLOUR, fillColor: ROUTE_COLOUR, fillOpacity: 1 }, offset: '100%' }
-    ]
+    path, map: campusMap, strokeColor: ROUTE_COLOUR, strokeOpacity: 0.95, strokeWeight: 6, zIndex: 2,
+    icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 3.5, strokeColor: '#ffffff', strokeWeight: 1, fillColor: ROUTE_COLOUR, fillOpacity: 1 }, offset: '100%' }]
   });
   if (!silent) {
     const bounds = new google.maps.LatLngBounds();
@@ -191,7 +201,10 @@ function drawFallbackRoute(origin, destinationPosition, silent) {
   }
 }
 
-function clearFallbackLine() { if (fallbackLine) { fallbackLine.setMap(null); fallbackLine = null; } }
+function clearFallbackLine() {
+  [fallbackLine, fallbackCasing].forEach(line => { if (line) line.setMap(null); });
+  fallbackLine = null; fallbackCasing = null;
+}
 function clearRenderedRoute() { try { directionsRenderer.setDirections({ routes: [] }); } catch (error) { /* nothing drawn yet */ } }
 
 function focusDestination(destinationId) {
@@ -541,14 +554,15 @@ function currentFix() {
 }
 // Pans to a place and opens its card (used when a place is picked from the search box).
 function focusPlace(id) {
+  if (!campusMap) { pendingFocusId = id; loadMap(); return; }          // open the map first, then show the place
   const item = markerById[id], location = findLocation(id);
-  if (!campusMap || !item || !location) return;
+  if (!item || !location) return;
   campusMap.panTo(location.position);
   campusMap.setZoom(17);
   showCampusInfo(item);
 }
 window.YCTMap = {
-  getFix: currentFix, focusPlace,
+  getFix: currentFix, focusPlace, centreOnPerson,
   onFix: callback => { fixListeners.push(callback); },
   startTracking,
   distance: distanceMeters,
@@ -619,6 +633,12 @@ function personIcon() {
 
 function personLabel() {
   return { text: person.name, color: '#ffffff', fontSize: '12px', fontWeight: '800', className: 'person-label' };
+}
+
+function centreOnPerson() {
+  if (!campusMap || !person) return;
+  campusMap.panTo(person.position);
+  campusMap.setZoom(17);
 }
 
 function refreshPersonInfo() {
@@ -730,6 +750,8 @@ function onLocatePerson() {
   if (result.error) { setPersonStatus(result.error, true); return; }
   if (window.YCTMeeting && window.YCTMeeting.isFollowing()) window.YCTMeeting.leave({ keepPerson: true });
   setPerson(document.getElementById('person-name').value, { lat: result.lat, lng: result.lng });
+  loadMap();                                                    // the map opens by itself
+  centreOnPerson();
   routeToPerson();                                              // draws the route
   const farKm = nearestCampusMetres(person.position) / 1000;
   let message = `${person.name} located.` + (campusMap ? '' : ' Press the map button to see them on the map.');
@@ -773,7 +795,9 @@ function loadPersonFromLink() {
   document.getElementById('person-coords').value = `${result.lat}, ${result.lng}`;
   document.getElementById('person-name').value = name;
   const box = document.getElementById('person-box'); if (box) box.open = true;
-  setPersonStatus(`${person.name}'s location was shared with you. Press the map button, then choose Me as your starting point and ${person.name} as your destination.`, false);
+  setPersonStatus(`${person.name}'s location was shared with you. The map is opening with a route from Me to ${person.name}.`, false);
+  loadMap();
+  routeToPerson();
 }
 
 function initPersonTools() {
@@ -790,6 +814,10 @@ window.parseCoordinates = parseCoordinates;
 
 // ---- Click-to-load map -------------------------------------------------------
 // Nothing is requested from Google until the visitor presses the load/retry button.
+function mapFailedNote() {
+  if (mapRouteWaiting) { mapRouteWaiting = false; showRouteNote('The map could not be opened, so the route cannot be drawn yet. Press the ↻ button in the map to try again.', true); }
+}
+
 function showMapPlaceholder(message, buttonLabel) {
   const mapElement = document.getElementById('map');
   mapElement.innerHTML = `
@@ -811,6 +839,7 @@ function loadMap() {
   const key = window.YCT_CONFIG?.googleMapsApiKey;
   if (!key || key === 'YOUR_GOOGLE_MAPS_API_KEY') {
     updateMapStatus('Map setup required');
+    mapFailedNote();
     showMapPlaceholder('No Google Maps API key is configured. Add your restricted key to js/config.js, reload, then try again.', 'Click the button to try again');
     return;
   }
@@ -829,6 +858,7 @@ function loadMap() {
     script.remove();
     mapLoadAttempted = false;                  // allow another attempt
     updateMapStatus('Map failed to load');
+    mapFailedNote();
     showMapPlaceholder('The map could not be loaded. Check your internet connection and API key.', 'Click the button to retry');
   };
   window.initMap = initMap;
@@ -840,6 +870,7 @@ window.gm_authFailure = () => {
   campusMap = undefined;
   mapLoadAttempted = false;
   updateMapStatus('Map key problem');
+  mapFailedNote();
   showMapPlaceholder('Google rejected the API key. Check its restrictions and that Maps JavaScript API is enabled.', 'Click the button to retry');
 };
 
