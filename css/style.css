@@ -170,7 +170,10 @@ input[type=search]{-webkit-appearance:none;appearance:none}
   .brand strong{max-width:none;font-size:.88rem;letter-spacing:.05em;line-height:1.2}
   .brand small{display:block;font-size:.62rem;letter-spacing:.1em;margin-top:1px}
 }
-@media(max-width:360px){
-  .brand strong{font-size:.78rem;letter-spacing:.03em}
-  .brand small{font-size:.56rem;letter-spacing:.06em}
+
+/* ===== Header text scales with the screen: never tiny on 360 px phones, subtitle always readable ===== */
+@media(max-width:1050px) and (min-height:481px){
+  .brand strong{font-size:clamp(.9rem,3.8vw,1rem);letter-spacing:.04em;line-height:1.2;max-width:none}
+  .brand small{display:block;font-size:clamp(.66rem,2.7vw,.74rem);letter-spacing:.07em;margin-top:2px}
+  .logo{width:38px;height:38px}
 }
