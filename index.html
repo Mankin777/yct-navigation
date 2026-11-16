@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b7010">
   <meta name="description" content="YCT Smart Navigation and Events System — a student-focused campus guide prototype.">
   <title>Y.C.T Smart Navigation and Events System</title>
-  <link rel="stylesheet" href="css/style.css?v=20261111">
+  <link rel="stylesheet" href="css/style.css?v=20261113">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -136,6 +136,7 @@
     <section class="section section-soft" id="guide">
       <div class="section-heading"><p class="eyebrow">STUDENT SUPPORT</p><h2>Student guide</h2><p>Choose the description that best fits you to see a suggested starting point. Requirements and processes can vary, so check the official portal or relevant office.</p></div>
       <div id="student-type-grid" class="card-grid student-type-grid"></div>
+      <div id="guide-selector" class="profile-wrap" data-picker></div>
       <div class="guide-layout">
         <div class="panel"><div class="panel-heading"><div><p class="eyebrow">SUGGESTED CHECKLIST</p><h3>Registration steps</h3></div><span id="progress-label" class="status-pill">0 of 9 complete</span></div><div class="progress-track"><span id="progress-bar"></span></div><div id="steps-list" class="steps-list"></div><button class="button button-small button-outline" id="reset-steps" type="button">Reset progress</button></div>
         <aside class="panel guide-aside"><div class="aside-icon">📌</div><h3>Before you visit an office</h3><ul><li>Check the current official instructions.</li><li>Keep originals safe and bring copies only when requested.</li><li>Confirm office location and opening hours.</li><li>Keep receipts and registration evidence.</li></ul><p class="fine-print">The steps shown here are a planning aid, not an official College directive.</p></aside>
@@ -144,6 +145,7 @@
 
     <section class="section" id="documents">
       <div class="section-heading"><p class="eyebrow">BE PREPARED</p><h2>Document checklist</h2><p>Tick items you have prepared. The list is a general reminder, not a definitive list of documents required for every student.</p></div>
+      <div id="docs-selector" class="profile-wrap" data-picker></div>
       <div class="checklist-layout"><div class="panel"><div class="panel-heading"><h3>My documents</h3><span class="status-pill" id="docs-count">0 ready</span></div><div id="documents-list" class="documents-list"></div><button class="text-button" type="button" id="clear-documents">Clear checklist</button></div><aside class="panel checklist-summary"><div class="progress-ring" id="docs-ring"><span id="docs-percent">0%</span></div><h3>Preparation progress</h3><p id="docs-summary">Tick a document when you have it ready.</p></aside></div>
     </section>
 
@@ -164,6 +166,6 @@
   <footer class="site-footer"><p>© 2026 Y.C.T Smart Navigation and Events System</p><p>Student project prototype · Verify official details before relying on them.</p></footer>
   <button type="button" id="floating-top" class="floating-top" aria-label="Back to top" hidden>↑</button>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="js/config.js?v=20261111"></script><script src="js/firebase-config.js?v=20261111"></script><script src="js/audio-notes.js?v=20261111"></script><script src="js/app.js?v=20261111"></script><script src="js/map.js?v=20261111"></script><script src="js/meeting.js?v=20261111"></script>
+  <script src="js/config.js?v=20261113"></script><script src="js/firebase-config.js?v=20261113"></script><script src="js/audio-notes.js?v=20261113"></script><script src="js/app.js?v=20261113"></script><script src="js/map.js?v=20261113"></script><script src="js/meeting.js?v=20261113"></script>
 </body>
 </html>
