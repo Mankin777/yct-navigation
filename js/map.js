@@ -177,7 +177,7 @@ function requestCampusRoute(sourceId, destinationId, options = {}) {
             if (!silent) focusDestination(destinationId);
           } else {
             warnDirectionsSetup(routesError, status);
-            useFallback(status);
+            useFallback(`Routes API: ${describeError(routesError)} · older service: ${status}`);
           }
         });
         return;
@@ -185,13 +185,13 @@ function requestCampusRoute(sourceId, destinationId, options = {}) {
     }
     // 3) a blue straight-line ribbon, so there is always something to follow
     warnDirectionsSetup(routesError, 'unavailable');
-    useFallback(describeError(routesError));
+    useFallback(`Routes API: ${describeError(routesError)}`);
   })();
 }
 
 // ---- Google routing helpers --------------------------------------------------------------
 function describeError(error) {
-  return String((error && (error.code || error.status || error.message)) || 'unavailable').replace(/\s+/g, ' ').slice(0, 60);
+  return String((error && (error.code || error.status || error.message)) || 'unavailable').replace(/\s+/g, ' ').slice(0, 110);
 }
 
 // For whoever runs the site: the visitor only sees a short code, the fix is explained in the browser console.
